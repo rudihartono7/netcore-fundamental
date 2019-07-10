@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HelloRadyaWebMVC.Data;
 using HelloRadyaWebMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,10 +11,18 @@ namespace HelloRadyaWebMVC.Controllers
 {
     public class EmployeeController : Controller
     {
+        private readonly CompanyDbContext _db;
+        public EmployeeController(CompanyDbContext db)
+        {
+            _db = db;
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
-            List<EmployeeViewModel> employeeList = GetEmployees().ToList();
+            //List<EmployeeViewModel> employeeList = GetEmployees().ToList();
+
+            List<EmployeeViewModel> employeeList = GetEmployeeFromDb();
 
             ViewBag.EmployeeList = employeeList;
             ViewBag.PositionOption = new SelectList(new List<EmployeePosition> { EmployeePosition.WEB, EmployeePosition.ANDROID });
@@ -35,10 +44,12 @@ namespace HelloRadyaWebMVC.Controllers
             if (string.IsNullOrEmpty(model.keyword))
                 model.keyword = string.Empty;
 
-            List<EmployeeViewModel> employeeList = GetEmployees()
-                .Where(x=>x.PositionEnum == model.employeePosition 
-                && x.Name.Contains(model.keyword)
-                ).ToList();
+            //List<EmployeeViewModel> employeeList = GetEmployees()
+            //    .Where(x=>x.PositionEnum == model.employeePosition 
+            //    && x.Name.Contains(model.keyword)
+            //    ).ToList();
+
+            List<EmployeeViewModel> employeeList = GetEmployeeFromDbWithWhereClause(model.employeePosition, model.keyword);
 
             ViewBag.PositionOption = new SelectList(new List<EmployeePosition> { EmployeePosition.WEB, EmployeePosition.ANDROID }, model.employeePosition);
             ViewBag.Keyword = model.keyword;
@@ -54,12 +65,24 @@ namespace HelloRadyaWebMVC.Controllers
             if (id == null)
                 return NotFound();
 
-            var detailEmployee = GetEmployees().FirstOrDefault(x => x.Id == id);
+            var detailEmployee = GetDetailEmployee((int)id);
+
             //var detailEmployee = (from a in GetEmployees()
             //                      where a.Id == id
             //                      select a).FirstOrDefault();
 
             return View(detailEmployee);
+        }
+
+        private EmployeeViewModel GetDetailEmployee(int id)
+        {
+            return _db.Employees.Select(a => new EmployeeViewModel
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Position = a.Position,
+                PositionEnum = a.PositionEnum,
+            }).FirstOrDefault(x => x.Id == id);
         }
 
         public IActionResult Add(EmployeeViewModel model)
@@ -69,7 +92,84 @@ namespace HelloRadyaWebMVC.Controllers
                 return View(model);
             }
 
+            AddEmployeeToDb(model);
+
             return RedirectToAction("Index");
+        }
+
+        public IActionResult Edit(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var detailEmployee = GetDetailEmployee((int)id);
+
+            ViewBag.PositionOption = new SelectList(new List<EmployeePosition>
+            {
+                EmployeePosition.WEB,
+                EmployeePosition.ANDROID,
+                EmployeePosition.ANALYST,
+                EmployeePosition.DESIGNER,
+                EmployeePosition.TESTER,
+                EmployeePosition.PM
+            }, detailEmployee.PositionEnum);
+
+            return View(detailEmployee);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(int? id, EmployeeViewModel model)
+        {
+            if (id == null)
+                return NotFound();
+
+            var employee = _db.Employees.FirstOrDefault(x => x.Id == id);
+
+            employee.Name = model.Name;
+            employee.Position = model.Position;
+            employee.PositionEnum = model.PositionEnum;
+
+            _db.Update(employee);
+            _db.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+        private void AddEmployeeToDb(EmployeeViewModel model)
+        {
+            Employee newEmployee = new Employee
+            {
+                Name = model.Name,
+                Position = model.Position,
+                PositionEnum = model.PositionEnum,
+                IsActive = true
+            };
+
+            _db.Add<Employee>(newEmployee);
+            _db.SaveChanges();
+        }
+        private List<EmployeeViewModel> GetEmployeeFromDbWithWhereClause(EmployeePosition employeePosition, string keyword)
+        {
+            return (from a in _db.Employees
+                    where a.PositionEnum == employeePosition &&
+                    a.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                    select new EmployeeViewModel
+                    {
+                        Id = a.Id,
+                        Name = a.Name,
+                        Position = a.Position,
+                        PositionEnum = a.PositionEnum,
+                    }).ToList();
+        }
+        private List<EmployeeViewModel> GetEmployeeFromDb()
+        {
+            return (from a in _db.Employees
+                    select new EmployeeViewModel
+                    {
+                        Id = a.Id,
+                        Name = a.Name,
+                        Position = a.Position,
+                        PositionEnum = a.PositionEnum,
+                    }).ToList();
         }
 
         private IEnumerable<EmployeeViewModel> GetEmployees()

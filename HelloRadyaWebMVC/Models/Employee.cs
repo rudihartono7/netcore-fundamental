@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HelloRadyaWebMVC.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,7 +15,6 @@ namespace HelloRadyaWebMVC.Models
         [MinLength(3)]
         public string keyword { get; set; }
     }
-    public enum EmployeePosition { WEB, ANDROID }
     public class EmployeeViewModel
     {
         [Required(ErrorMessage = "ID harus di isi dong")]
