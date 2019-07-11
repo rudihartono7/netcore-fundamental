@@ -106,29 +106,5 @@ namespace KaryawanCSharp
             x.Address = newAddress; x.Position = newPosition; return x;}).ToList();
             return listKaryawan;
         }
-
-        // public class Karyawans
-        // {
-        //     public System.Collections.Generic.IEnumerable<Karyawan> NextKaryawan
-        //     {
-        //         get
-        //         {
-        //             yield return new Karyawan("Koval", "Bandung");
-        //             yield return new Karyawan("Lakov", "Bandung Coret");
-        //             yield return new Karyawan("Levs", "Bandung Pinggiran");
-        //             yield return new Karyawan("Svel", "Bandung Sebelah Sana");
-        //             yield return new Karyawan("Hero", "Bandung Agak Kesinian");
-        //         }
-        //     }
-        // } 
-
-        // public class Karyawans
-        // {
-        //     List<Karyawan> listKaryawan = new List<Karyawan>()
-        //     {
-        //      new Karyawan("Levs", "Bandung"),
-
-        //     };
-        // }
     }
 }
