@@ -34,6 +34,7 @@ namespace WebAppKaryawan.Controllers
 
             var company = await _context.Company
                 .FirstOrDefaultAsync(m => m.CompanyID == id);
+
             if (company == null)
             {
                 return NotFound();

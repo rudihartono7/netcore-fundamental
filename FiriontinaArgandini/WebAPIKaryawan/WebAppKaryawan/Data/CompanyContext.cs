@@ -14,5 +14,6 @@ namespace WebAppKaryawan.Models
         }
 
         public DbSet<WebAppKaryawan.Models.Company> Company { get; set; }
+        public DbSet<WebAppKaryawan.Models.Employee> Employee { get; set; }
     }
 }

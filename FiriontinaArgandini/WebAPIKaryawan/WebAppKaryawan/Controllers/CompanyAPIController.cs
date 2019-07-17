@@ -11,7 +11,8 @@ using WebAppKaryawan.Models;
 namespace WebAppKaryawan.Controllers
 {
     [Route("api/[controller]")]
-    public class CompanyAPIController : Controller
+    [ApiController]
+    public class CompanyAPIController : ControllerBase
     {
         private readonly CompanyContext _context;
 
@@ -20,25 +21,86 @@ namespace WebAppKaryawan.Controllers
             _context = context;
         }
 
-        // GET: api/employee
+        // GET: api/Companies
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
+        public async Task<ActionResult<IEnumerable<Company>>> GetCompany()
         {
             return await _context.Company.ToListAsync();
         }
 
-        // GET: api/employee/1
+        // GET: api/Companies/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Company>> GetCompany(int id)
         {
-            var todoItem = await _context.Company.FindAsync(id);
+            var company = await _context.Company.FindAsync(id);
 
-            if (todoItem == null)
+            if (company == null)
             {
                 return NotFound();
             }
 
-            return todoItem;
+            return company;
+        }
+
+        // PUT: api/Companies/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCompany(int id, Company company)
+        {
+            if (id != company.CompanyID)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(company).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CompanyExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // POST: api/Companies
+        [HttpPost]
+        public async Task<ActionResult<Company>> PostCompany(Company company)
+        {
+            _context.Company.Add(company);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetCompany", new { id = company.CompanyID }, company);
+        }
+
+        // DELETE: api/Companies/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Company>> DeleteCompany(int id)
+        {
+            var company = await _context.Company.FindAsync(id);
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            _context.Company.Remove(company);
+            await _context.SaveChangesAsync();
+
+            return company;
+        }
+
+        private bool CompanyExists(int id)
+        {
+            return _context.Company.Any(e => e.CompanyID == id);
         }
     }
 }

@@ -21,6 +21,10 @@ namespace WebAppKaryawan.Controllers
         // GET: Employees
         public async Task<IActionResult> Index()
         {
+            ViewData["LineCompany"] = (from employee in _context.Employee
+                                       join company in _context.Company
+                                       on employee.CompanyID equals company.CompanyID
+                                       select company.Name).FirstOrDefault();
             return View(await _context.Employee.ToListAsync());
         }
 
@@ -34,6 +38,11 @@ namespace WebAppKaryawan.Controllers
 
             var employee = await _context.Employee
                 .FirstOrDefaultAsync(m => m.EmployeeID == id);
+
+            ViewData["LineCompany"] = (from company in _context.Company
+                                       where company.CompanyID == employee.CompanyID
+                                       select company.Name).FirstOrDefault();
+
             if (employee == null)
             {
                 return NotFound();
@@ -45,6 +54,7 @@ namespace WebAppKaryawan.Controllers
         // GET: Employees/Create
         public IActionResult Create()
         {
+            ViewBag.CompanyList = _context.Company.ToList();
             return View();
         }
 
@@ -72,7 +82,9 @@ namespace WebAppKaryawan.Controllers
                 return NotFound();
             }
 
+            ViewBag.CompanyList = _context.Company.ToList();
             var employee = await _context.Employee.FindAsync(id);
+
             if (employee == null)
             {
                 return NotFound();
