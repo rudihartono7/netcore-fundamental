@@ -19,9 +19,16 @@ namespace KovalevsheroMVC.Controllers
         }
 
         // GET: Companies
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View(await _context.Company.ToListAsync());
+            var comp = from m in _context.Company
+                      select m;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                comp = comp.Where(s => s.Name.Contains(searchString));
+            }
+            return View(await comp.ToListAsync());
         }
 
         // GET: Companies/Details/5

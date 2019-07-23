@@ -10,8 +10,16 @@ namespace KovalevsheroMVC.Models
     {
         [Required]
         public int Id { get; set; }
+
+        [RegularExpression(@"^[A-Z]+[a-zA-Z""'\s-]*$")]
+        [Required]
+        [StringLength(50, MinimumLength = 3)]
         public string Name { get; set; }
+
+        [Required]
+        [StringLength(50)]
         public string Position { get; set; }
+
         public int CompanyID { get; set; }
     }
 }
